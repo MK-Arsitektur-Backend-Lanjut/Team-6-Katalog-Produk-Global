@@ -1,0 +1,111 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+// Public Read API Controllers
+use App\Http\Controllers\Api\V1\Catalog\ProductDetailController;
+use App\Http\Controllers\Api\V1\Catalog\CategoryController;
+
+// Internal Management API Controllers
+use App\Http\Controllers\Api\V1\Internal\Catalog\ProductController;
+use App\Http\Controllers\Api\V1\Internal\Catalog\CategoryController as InternalCategoryController;
+use App\Http\Controllers\Api\V1\Internal\Catalog\AttributeController;
+use App\Http\Controllers\Api\V1\Internal\Catalog\ProductAttributeController;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes — Modul 1: Catalog Metadata
+|--------------------------------------------------------------------------
+|
+| Semua route di-prefix dengan /api/v1 oleh RouteServiceProvider.
+| Dipisahkan menjadi:
+| 1. Public Read API — diakses oleh frontend/consumer
+| 2. Internal Management API — diakses oleh admin/internal service
+|
+*/
+
+// =============================================================================
+// PUBLIC READ API
+// =============================================================================
+
+Route::prefix('v1/catalog')->group(function () {
+
+    // Product Detail (read-only, cache-backed)
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductDetailController::class, 'index'])
+            ->name('catalog.products.index');
+
+        Route::get('id/{id}', [ProductDetailController::class, 'showById'])
+            ->where('id', '[0-9]+')
+            ->name('catalog.products.showById');
+
+        Route::get('{slug}', [ProductDetailController::class, 'showBySlug'])
+            ->where('slug', '[a-z0-9\-]+')
+            ->name('catalog.products.showBySlug');
+    });
+
+    // Category (read-only, cache-backed)
+    Route::prefix('categories')->group(function () {
+        Route::get('tree', [CategoryController::class, 'tree'])
+            ->name('catalog.categories.tree');
+
+        Route::get('{slug}/breadcrumbs', [CategoryController::class, 'breadcrumbs'])
+            ->where('slug', '[a-z0-9\-]+')
+            ->name('catalog.categories.breadcrumbs');
+
+        Route::get('{slug}', [CategoryController::class, 'show'])
+            ->where('slug', '[a-z0-9\-]+')
+            ->name('catalog.categories.show');
+    });
+});
+
+// =============================================================================
+// INTERNAL MANAGEMENT API
+// =============================================================================
+
+Route::prefix('v1/internal/catalog')->group(function () {
+
+    // Product Management
+    Route::prefix('products')->group(function () {
+        Route::post('/', [ProductController::class, 'store'])
+            ->name('internal.catalog.products.store');
+
+        Route::put('{id}', [ProductController::class, 'update'])
+            ->where('id', '[0-9]+')
+            ->name('internal.catalog.products.update');
+
+        // Product Attribute Sync
+        Route::put('{id}/attributes/sync', [ProductAttributeController::class, 'syncProductAttributes'])
+            ->where('id', '[0-9]+')
+            ->name('internal.catalog.products.attributes.sync');
+    });
+
+    // Category Management
+    Route::prefix('categories')->group(function () {
+        Route::post('/', [InternalCategoryController::class, 'store'])
+            ->name('internal.catalog.categories.store');
+
+        Route::put('{id}', [InternalCategoryController::class, 'update'])
+            ->where('id', '[0-9]+')
+            ->name('internal.catalog.categories.update');
+
+        Route::delete('{id}', [InternalCategoryController::class, 'destroy'])
+            ->where('id', '[0-9]+')
+            ->name('internal.catalog.categories.destroy');
+
+        // Category Attribute Sync
+        Route::post('{id}/attributes/sync', [ProductAttributeController::class, 'syncCategoryAttributes'])
+            ->where('id', '[0-9]+')
+            ->name('internal.catalog.categories.attributes.sync');
+    });
+
+    // Attribute Management
+    Route::prefix('attributes')->group(function () {
+        Route::post('/', [AttributeController::class, 'store'])
+            ->name('internal.catalog.attributes.store');
+
+        Route::put('{id}', [AttributeController::class, 'update'])
+            ->where('id', '[0-9]+')
+            ->name('internal.catalog.attributes.update');
+    });
+});

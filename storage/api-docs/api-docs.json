@@ -1,0 +1,560 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Katalog Produk Global API",
+        "description": "Dokumentasi API untuk Modul 1",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/catalog/categories/tree": {
+            "get": {
+                "tags": [
+                    "Public Categories"
+                ],
+                "summary": "Get category hierarchy tree",
+                "description": "Returns all categories in a nested tree structure (cached)",
+                "operationId": "getCategoryTree",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/categories/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Categories"
+                ],
+                "summary": "Get category detail by slug",
+                "description": "Returns the category details",
+                "operationId": "getCategoryBySlug",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Category Slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/categories/{slug}/breadcrumbs": {
+            "get": {
+                "tags": [
+                    "Public Categories"
+                ],
+                "summary": "Get breadcrumbs for a category",
+                "description": "Returns an array of categories representing the path from root to this category",
+                "operationId": "getCategoryBreadcrumbs",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Category Slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products": {
+            "get": {
+                "tags": [
+                    "Public Products"
+                ],
+                "summary": "Get all active products",
+                "description": "Returns paginated active products list",
+                "operationId": "getProducts",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Products"
+                ],
+                "summary": "Get product detail by slug",
+                "description": "Returns full product detail snapshot",
+                "operationId": "getProductBySlug",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Product Slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/id/{id}": {
+            "get": {
+                "tags": [
+                    "Public Products"
+                ],
+                "summary": "Get product detail by ID",
+                "description": "Returns full product detail snapshot",
+                "operationId": "getProductById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/attributes": {
+            "post": {
+                "tags": [
+                    "Internal Attribute Management"
+                ],
+                "summary": "Create new attribute",
+                "operationId": "storeAttribute",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "color"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Warna"
+                                    },
+                                    "data_type": {
+                                        "type": "string",
+                                        "example": "select"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/attributes/{id}": {
+            "put": {
+                "tags": [
+                    "Internal Attribute Management"
+                ],
+                "summary": "Update existing attribute",
+                "operationId": "updateAttribute",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Attribute ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Warna"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/categories": {
+            "post": {
+                "tags": [
+                    "Internal Category Management"
+                ],
+                "summary": "Create new category",
+                "operationId": "storeCategory",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "New Category"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "new-category"
+                                    },
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/categories/{id}": {
+            "put": {
+                "tags": [
+                    "Internal Category Management"
+                ],
+                "summary": "Update category",
+                "operationId": "updateCategory",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Category"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Internal Category Management"
+                ],
+                "summary": "Delete category",
+                "operationId": "deleteCategory",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/products/{id}/attributes/sync": {
+            "put": {
+                "tags": [
+                    "Internal Attribute Sync"
+                ],
+                "summary": "Sync product inherited attributes",
+                "description": "Sync attributes for a product based on its primary category hierarchy",
+                "operationId": "syncProductAttributes",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Synced successfully"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/categories/{id}/attributes/sync": {
+            "post": {
+                "tags": [
+                    "Internal Attribute Sync"
+                ],
+                "summary": "Sync category attribute definitions",
+                "description": "Attach attribute definitions to a category and trigger product re-syncs",
+                "operationId": "syncCategoryAttributes",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "attributes": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "attribute_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "is_required": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Synced successfully"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/products": {
+            "post": {
+                "tags": [
+                    "Internal Product Management"
+                ],
+                "summary": "Create new product",
+                "operationId": "storeProduct",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "sku": {
+                                        "type": "string",
+                                        "example": "SKU-123"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "product-123"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Product 123"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 15000
+                                    },
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "category_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "is_primary": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/catalog/products/{id}": {
+            "put": {
+                "tags": [
+                    "Internal Product Management"
+                ],
+                "summary": "Update product",
+                "operationId": "updateProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Product"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Public Categories",
+            "description": "Public Categories"
+        },
+        {
+            "name": "Public Products",
+            "description": "Public Products"
+        },
+        {
+            "name": "Internal Attribute Management",
+            "description": "Internal Attribute Management"
+        },
+        {
+            "name": "Internal Category Management",
+            "description": "Internal Category Management"
+        },
+        {
+            "name": "Internal Attribute Sync",
+            "description": "Internal Attribute Sync"
+        },
+        {
+            "name": "Internal Product Management",
+            "description": "Internal Product Management"
+        }
+    ]
+}
