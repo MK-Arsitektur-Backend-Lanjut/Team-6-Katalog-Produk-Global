@@ -29,7 +29,7 @@ class ProductController extends Controller
         path: '/api/v1/internal/catalog/products',
         operationId: 'storeProduct',
         summary: 'Create new product',
-        tags: ['Internal Product Management'],
+        tags: ['Module 1 - Catalog Metadata'],
     )]
     #[OA\RequestBody(
         required: true,
@@ -76,7 +76,7 @@ class ProductController extends Controller
         path: '/api/v1/internal/catalog/products/{id}',
         operationId: 'updateProduct',
         summary: 'Update product',
-        tags: ['Internal Product Management'],
+        tags: ['Module 1 - Catalog Metadata'],
     )]
     #[OA\Parameter(name: 'id', description: 'Product ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\RequestBody(

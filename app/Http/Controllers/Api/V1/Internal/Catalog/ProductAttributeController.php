@@ -29,7 +29,7 @@ class ProductAttributeController extends Controller
         path: '/api/v1/internal/catalog/products/{id}/attributes/sync',
         operationId: 'syncProductAttributes',
         summary: 'Sync product inherited attributes',
-        tags: ['Internal Attribute Sync'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Sync attributes for a product based on its primary category hierarchy',
     )]
     #[OA\Parameter(name: 'id', description: 'Product ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
@@ -59,7 +59,7 @@ class ProductAttributeController extends Controller
         path: '/api/v1/internal/catalog/categories/{id}/attributes/sync',
         operationId: 'syncCategoryAttributes',
         summary: 'Sync category attribute definitions',
-        tags: ['Internal Attribute Sync'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Attach attribute definitions to a category and trigger product re-syncs',
     )]
     #[OA\Parameter(name: 'id', description: 'Category ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]

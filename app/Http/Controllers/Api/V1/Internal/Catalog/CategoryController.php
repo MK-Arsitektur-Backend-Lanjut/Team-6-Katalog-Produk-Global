@@ -28,7 +28,7 @@ class CategoryController extends Controller
         path: '/api/v1/internal/catalog/categories',
         operationId: 'storeCategory',
         summary: 'Create new category',
-        tags: ['Internal Category Management'],
+        tags: ['Module 1 - Catalog Metadata'],
     )]
     #[OA\RequestBody(
         required: true,
@@ -58,7 +58,7 @@ class CategoryController extends Controller
         path: '/api/v1/internal/catalog/categories/{id}',
         operationId: 'updateCategory',
         summary: 'Update category',
-        tags: ['Internal Category Management'],
+        tags: ['Module 1 - Catalog Metadata'],
     )]
     #[OA\Parameter(name: 'id', description: 'Category ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\RequestBody(
@@ -99,7 +99,7 @@ class CategoryController extends Controller
         path: '/api/v1/internal/catalog/categories/{id}',
         operationId: 'deleteCategory',
         summary: 'Delete category',
-        tags: ['Internal Category Management'],
+        tags: ['Module 1 - Catalog Metadata'],
     )]
     #[OA\Parameter(name: 'id', description: 'Category ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\Response(response: 200, description: 'Deleted')]

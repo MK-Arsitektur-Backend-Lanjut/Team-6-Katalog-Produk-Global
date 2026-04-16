@@ -29,7 +29,7 @@ class ProductDetailController extends Controller
         path: '/api/v1/catalog/products',
         operationId: 'getProducts',
         summary: 'Get all active products',
-        tags: ['Public Products'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Returns paginated active products list',
     )]
     #[OA\Parameter(name: 'per_page', description: 'Items per page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 15))]
@@ -47,7 +47,7 @@ class ProductDetailController extends Controller
         path: '/api/v1/catalog/products/{slug}',
         operationId: 'getProductBySlug',
         summary: 'Get product detail by slug',
-        tags: ['Public Products'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Returns full product detail snapshot',
     )]
     #[OA\Parameter(name: 'slug', description: 'Product Slug', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
@@ -72,7 +72,7 @@ class ProductDetailController extends Controller
         path: '/api/v1/catalog/products/id/{id}',
         operationId: 'getProductById',
         summary: 'Get product detail by ID',
-        tags: ['Public Products'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Returns full product detail snapshot',
     )]
     #[OA\Parameter(name: 'id', description: 'Product ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]

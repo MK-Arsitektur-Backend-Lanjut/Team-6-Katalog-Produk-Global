@@ -32,6 +32,26 @@ Route::prefix('v1/catalog')->group(function () {
 
     // Product Detail (read-only, cache-backed)
     Route::prefix('products')->group(function () {
+        // Product Search
+        Route::get('search', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchController::class, '__invoke'])
+            ->name('catalog.products.search');
+
+        // Search Optimization endpoints (autocomplete, facets, bulk, suggest, stats)
+        Route::get('autocomplete', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'autocomplete'])
+            ->name('catalog.products.autocomplete');
+
+        Route::get('facets', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'facets'])
+            ->name('catalog.products.facets');
+
+        Route::post('bulk-search', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'bulkSearch'])
+            ->name('catalog.products.bulkSearch');
+
+        Route::get('suggest', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'suggest'])
+            ->name('catalog.products.suggest');
+
+        Route::get('stats', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'stats'])
+            ->name('catalog.products.stats');
+
         Route::get('/', [ProductDetailController::class, 'index'])
             ->name('catalog.products.index');
 

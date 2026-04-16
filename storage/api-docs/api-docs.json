@@ -15,7 +15,7 @@
         "/api/v1/catalog/categories/tree": {
             "get": {
                 "tags": [
-                    "Public Categories"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Get category hierarchy tree",
                 "description": "Returns all categories in a nested tree structure (cached)",
@@ -30,7 +30,7 @@
         "/api/v1/catalog/categories/{slug}": {
             "get": {
                 "tags": [
-                    "Public Categories"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Get category detail by slug",
                 "description": "Returns the category details",
@@ -59,7 +59,7 @@
         "/api/v1/catalog/categories/{slug}/breadcrumbs": {
             "get": {
                 "tags": [
-                    "Public Categories"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Get breadcrumbs for a category",
                 "description": "Returns an array of categories representing the path from root to this category",
@@ -88,7 +88,7 @@
         "/api/v1/catalog/products": {
             "get": {
                 "tags": [
-                    "Public Products"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Get all active products",
                 "description": "Returns paginated active products list",
@@ -115,7 +115,7 @@
         "/api/v1/catalog/products/{slug}": {
             "get": {
                 "tags": [
-                    "Public Products"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Get product detail by slug",
                 "description": "Returns full product detail snapshot",
@@ -144,7 +144,7 @@
         "/api/v1/catalog/products/id/{id}": {
             "get": {
                 "tags": [
-                    "Public Products"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Get product detail by ID",
                 "description": "Returns full product detail snapshot",
@@ -170,10 +170,354 @@
                 }
             }
         },
+        "/api/v1/catalog/products/search": {
+            "get": {
+                "tags": [
+                    "Module 2 - Search Optimization"
+                ],
+                "summary": "Search products with filters, sorting and pagination",
+                "description": "Search products using keyword, category, price/rating filters, sorting and pagination.",
+                "operationId": "searchProducts",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "description": "Search keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "smartphone"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter by category id (will include descendants)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "description": "Minimum price filter (in IDR)",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 100000
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "description": "Maximum price filter (in IDR)",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 500000
+                        }
+                    },
+                    {
+                        "name": "min_rating",
+                        "in": "query",
+                        "description": "Minimum average rating filter (0-5)",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 4
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort order (price_asc, price_desc, rating_desc, latest)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "price_desc"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page (max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10,
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 123
+                                                    },
+                                                    "sku": {
+                                                        "type": "string",
+                                                        "example": "SKU-001"
+                                                    },
+                                                    "slug": {
+                                                        "type": "string",
+                                                        "example": "produk-sku-001"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "LG Product uQXQG - 1"
+                                                    },
+                                                    "short_description": {
+                                                        "type": "string",
+                                                        "example": "Short description here"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Full description here"
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 4780000
+                                                    },
+                                                    "rating_avg": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 4.2
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "active"
+                                                    },
+                                                    "metadata_version": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2026-04-15T12:00:00Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2026-04-15T12:00:00Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 10000
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 1000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "id": 123,
+                                            "sku": "SKU-001",
+                                            "slug": "produk-sku-001",
+                                            "name": "LG Product uQXQG - 1",
+                                            "short_description": "Short description here",
+                                            "description": "Full description here",
+                                            "price": 4780000,
+                                            "rating_avg": 4.2,
+                                            "status": "active",
+                                            "metadata_version": 1,
+                                            "created_at": "2026-04-15T12:00:00Z",
+                                            "updated_at": "2026-04-15T12:00:00Z"
+                                        }
+                                    ],
+                                    "meta": {
+                                        "current_page": 1,
+                                        "per_page": 10,
+                                        "total": 10000,
+                                        "last_page": 1000
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/autocomplete": {
+            "get": {
+                "tags": [
+                    "Module 2 - Search Optimization"
+                ],
+                "summary": "Autocomplete product names",
+                "description": "Return product suggestions for autocomplete (id, name, slug) based on prefix match.",
+                "operationId": "autocompleteProducts",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Search prefix",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "sma"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/facets": {
+            "get": {
+                "tags": [
+                    "Module 2 - Search Optimization"
+                ],
+                "summary": "Get facets for search UI (category counts, price ranges)",
+                "description": "Return category counts and predefined price-range counts to drive UI filters.",
+                "operationId": "productFacets",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "description": "Optional keyword to scope facets",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/bulk-search": {
+            "post": {
+                "tags": [
+                    "Module 2 - Search Optimization"
+                ],
+                "summary": "Bulk lookup products by ids",
+                "description": "Return multiple products by ID in a single request (useful for batch calls).",
+                "operationId": "bulkSearchProducts",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/suggest": {
+            "get": {
+                "tags": [
+                    "Module 2 - Search Optimization"
+                ],
+                "summary": "Suggest related products",
+                "description": "Return related products (same category or similar) for recommendation widget.",
+                "operationId": "suggestProducts",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "query",
+                        "description": "Source product id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/stats": {
+            "get": {
+                "tags": [
+                    "Module 2 - Search Optimization"
+                ],
+                "summary": "Search / product stats",
+                "description": "Return simple statistics useful for search analytics or caching (e.g. total products).",
+                "operationId": "productSearchStats",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
         "/api/v1/internal/catalog/attributes": {
             "post": {
                 "tags": [
-                    "Internal Attribute Management"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Create new attribute",
                 "operationId": "storeAttribute",
@@ -211,7 +555,7 @@
         "/api/v1/internal/catalog/attributes/{id}": {
             "put": {
                 "tags": [
-                    "Internal Attribute Management"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Update existing attribute",
                 "operationId": "updateAttribute",
@@ -252,7 +596,7 @@
         "/api/v1/internal/catalog/categories": {
             "post": {
                 "tags": [
-                    "Internal Category Management"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Create new category",
                 "operationId": "storeCategory",
@@ -290,7 +634,7 @@
         "/api/v1/internal/catalog/categories/{id}": {
             "put": {
                 "tags": [
-                    "Internal Category Management"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Update category",
                 "operationId": "updateCategory",
@@ -329,7 +673,7 @@
             },
             "delete": {
                 "tags": [
-                    "Internal Category Management"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Delete category",
                 "operationId": "deleteCategory",
@@ -354,7 +698,7 @@
         "/api/v1/internal/catalog/products/{id}/attributes/sync": {
             "put": {
                 "tags": [
-                    "Internal Attribute Sync"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Sync product inherited attributes",
                 "description": "Sync attributes for a product based on its primary category hierarchy",
@@ -380,7 +724,7 @@
         "/api/v1/internal/catalog/categories/{id}/attributes/sync": {
             "post": {
                 "tags": [
-                    "Internal Attribute Sync"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Sync category attribute definitions",
                 "description": "Attach attribute definitions to a category and trigger product re-syncs",
@@ -434,7 +778,7 @@
         "/api/v1/internal/catalog/products": {
             "post": {
                 "tags": [
-                    "Internal Product Management"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Create new product",
                 "operationId": "storeProduct",
@@ -492,7 +836,7 @@
         "/api/v1/internal/catalog/products/{id}": {
             "put": {
                 "tags": [
-                    "Internal Product Management"
+                    "Module 1 - Catalog Metadata"
                 ],
                 "summary": "Update product",
                 "operationId": "updateProduct",
@@ -533,28 +877,12 @@
     },
     "tags": [
         {
-            "name": "Public Categories",
-            "description": "Public Categories"
+            "name": "Module 1 - Catalog Metadata",
+            "description": "Public and internal endpoints for catalog metadata (products, categories, attributes)."
         },
         {
-            "name": "Public Products",
-            "description": "Public Products"
-        },
-        {
-            "name": "Internal Attribute Management",
-            "description": "Internal Attribute Management"
-        },
-        {
-            "name": "Internal Category Management",
-            "description": "Internal Category Management"
-        },
-        {
-            "name": "Internal Attribute Sync",
-            "description": "Internal Attribute Sync"
-        },
-        {
-            "name": "Internal Product Management",
-            "description": "Internal Product Management"
+            "name": "Module 2 - Search Optimization",
+            "description": "Search-related endpoints and optimization features (search, facets, autocomplete)."
         }
     ]
 }
