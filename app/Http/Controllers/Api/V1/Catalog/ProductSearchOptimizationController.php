@@ -6,18 +6,17 @@ use OpenApi\Attributes as OA;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\Models\Catalog\Product;
-use App\Models\Catalog\Category;
 use App\Http\Resources\Catalog\ProductResource;
+use App\Services\Catalog\CatalogCacheService;
 
 class ProductSearchOptimizationController extends Controller
 {
-    public function __construct()
-    {
-    }
+    public function __construct(
+        protected CatalogCacheService $cacheService,
+    ) {}
 
     #[OA\Get(
         path: '/api/v1/catalog/products/autocomplete',
@@ -36,11 +35,18 @@ class ProductSearchOptimizationController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $items = Product::query()
-            ->where('name', 'like', $q . '%')
-            ->select('id', 'name', 'slug')
-            ->limit(10)
-            ->get();
+        $items = $this->cacheService->remember(
+            $this->cacheService->searchAutocompleteKey($q),
+            fn() => Product::query()
+                ->where('status', 'active')
+                ->where('name', 'like', $q . '%')
+                ->select('id', 'name', 'slug')
+                ->orderBy('name')
+                ->limit(10)
+                ->get()
+                ->toArray(),
+            $this->cacheService->searchTtl()
+        );
 
         return response()->json(['data' => $items]);
     }
@@ -58,50 +64,59 @@ class ProductSearchOptimizationController extends Controller
     {
         $kw = trim((string) $request->query('keyword', ''));
 
-        $baseQuery = Product::query()->select('products.id')->where('status', 'active');
-        if ($kw !== '') {
-            $baseQuery->where('name', 'like', "%{$kw}%");
-        }
+        $data = $this->cacheService->remember(
+            $this->cacheService->searchFacetsKey($kw),
+            function () use ($kw) {
+                // Category counts (top 10)
+                $categoryCounts = DB::table('product_categories')
+                    ->join('products', 'product_categories.product_id', '=', 'products.id')
+                    ->join('categories', 'product_categories.category_id', '=', 'categories.id')
+                    ->where('products.status', 'active')
+                    ->where('categories.is_active', true)
+                    ->when($kw !== '', fn($q) => $q->where('products.name', 'like', "%{$kw}%"))
+                    ->groupBy('categories.id', 'categories.name')
+                    ->orderByRaw('COUNT(products.id) desc')
+                    ->limit(10)
+                    ->get(['categories.id as category_id', 'categories.name as category_name', DB::raw('COUNT(products.id) as count')])
+                    ->toArray();
 
-        // Category counts (top 10)
-        $categoryCounts = DB::table('product_categories')
-            ->join('products', 'product_categories.product_id', '=', 'products.id')
-            ->join('categories', 'product_categories.category_id', '=', 'categories.id')
-            ->when($kw !== '', fn($q) => $q->where('products.name', 'like', "%{$kw}%"))
-            ->groupBy('categories.id', 'categories.name')
-            ->orderByRaw('COUNT(products.id) desc')
-            ->limit(10)
-            ->get(['categories.id as category_id', 'categories.name as category_name', DB::raw('COUNT(products.id) as count')]);
+                $priceBuckets = [
+                    ['key' => 'lt_100k', 'alias' => 'lt_100k', 'label' => '< 100k'],
+                    ['key' => '100k_500k', 'alias' => 'range_100k_500k', 'label' => '100k - 500k'],
+                    ['key' => '500k_1m', 'alias' => 'range_500k_1m', 'label' => '500k - 1M'],
+                    ['key' => 'gte_1m', 'alias' => 'gte_1m', 'label' => '>= 1M'],
+                ];
 
-        // Price range buckets
-        $priceBuckets = [
-            ['key' => 'lt_100k', 'label' => '< 100k', 'min' => 0, 'max' => 100000],
-            ['key' => '100k_500k', 'label' => '100k - 500k', 'min' => 100000, 'max' => 500000],
-            ['key' => '500k_1m', 'label' => '500k - 1M', 'min' => 500000, 'max' => 1000000],
-            ['key' => 'gte_1m', 'label' => '>= 1M', 'min' => 1000000, 'max' => null],
-        ];
+                $priceBucketCounts = Product::query()
+                    ->where('status', 'active')
+                    ->when($kw !== '', fn($q) => $q->where('name', 'like', "%{$kw}%"))
+                    ->selectRaw('
+                        SUM(CASE WHEN price < 100000 THEN 1 ELSE 0 END) as lt_100k,
+                        SUM(CASE WHEN price >= 100000 AND price < 500000 THEN 1 ELSE 0 END) as range_100k_500k,
+                        SUM(CASE WHEN price >= 500000 AND price < 1000000 THEN 1 ELSE 0 END) as range_500k_1m,
+                        SUM(CASE WHEN price >= 1000000 THEN 1 ELSE 0 END) as gte_1m
+                    ')
+                    ->first();
 
-        $priceCounts = [];
-        foreach ($priceBuckets as $b) {
-            $q = Product::query()->where('status', 'active');
-            if ($kw !== '') $q->where('name', 'like', "%{$kw}%");
-            if ($b['max'] === null) {
-                $q->where('price', '>=', $b['min']);
-            } else {
-                $q->whereBetween('price', [$b['min'], $b['max']]);
-            }
-            $priceCounts[] = [
-                'key' => $b['key'],
-                'label' => $b['label'],
-                'count' => $q->count(),
-            ];
-        }
+                $priceCounts = collect($priceBuckets)
+                    ->map(fn($bucket) => [
+                        'key' => $bucket['key'],
+                        'label' => $bucket['label'],
+                        'count' => (int) ($priceBucketCounts->{$bucket['alias']} ?? 0),
+                    ])
+                    ->values()
+                    ->all();
+
+                return [
+                    'categories' => $categoryCounts,
+                    'price_ranges' => $priceCounts,
+                ];
+            },
+            $this->cacheService->searchTtl()
+        );
 
         return response()->json([
-            'data' => [
-                'categories' => $categoryCounts,
-                'price_ranges' => $priceCounts,
-            ],
+            'data' => $data,
         ]);
     }
 
@@ -122,7 +137,17 @@ class ProductSearchOptimizationController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $products = Product::whereIn('id', $ids)->get();
+        $ids = collect($ids)
+            ->map(fn($id) => (int) $id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->take(100)
+            ->values()
+            ->all();
+
+        $products = Product::where('status', 'active')
+            ->whereIn('id', $ids)
+            ->get();
 
         return response()->json(['data' => ProductResource::collection($products)]);
     }
@@ -140,31 +165,39 @@ class ProductSearchOptimizationController extends Controller
     {
         $productId = (int) $request->query('product_id', 0);
 
-        $product = Product::find($productId);
-        if (!$product) {
-            return response()->json(['data' => []]);
-        }
+        $suggestions = $this->cacheService->remember(
+            $this->cacheService->searchSuggestKey($productId),
+            function () use ($productId, $request) {
+                $product = Product::find($productId);
+                if (!$product) {
+                    return [];
+                }
 
-        // find products in same primary category if available
-        $primaryCategory = DB::table('product_categories')
-            ->where('product_id', $product->id)
-            ->where('is_primary', true)
-            ->value('category_id');
+                // find products in same primary category if available
+                $primaryCategory = DB::table('product_categories')
+                    ->where('product_id', $product->id)
+                    ->where('is_primary', true)
+                    ->value('category_id');
 
-        $suggestions = Product::query()
-            ->where('status', 'active')
-            ->where('id', '!=', $product->id)
-            ->when($primaryCategory, fn($q) => $q->whereExists(function ($sub) use ($primaryCategory) {
-                $sub->select(DB::raw(1))
-                    ->from('product_categories')
-                    ->whereColumn('product_categories.product_id', 'products.id')
-                    ->where('product_categories.category_id', $primaryCategory);
-            }))
-            ->orderByDesc('rating_avg')
-            ->limit(5)
-            ->get();
+                $products = Product::query()
+                    ->where('status', 'active')
+                    ->where('id', '!=', $product->id)
+                    ->when($primaryCategory, fn($q) => $q->whereExists(function ($sub) use ($primaryCategory) {
+                        $sub->select(DB::raw(1))
+                            ->from('product_categories')
+                            ->whereColumn('product_categories.product_id', 'products.id')
+                            ->where('product_categories.category_id', $primaryCategory);
+                    }))
+                    ->orderByDesc('rating_avg')
+                    ->limit(5)
+                    ->get();
 
-        return response()->json(['data' => ProductResource::collection($suggestions)]);
+                return ProductResource::collection($products)->resolve($request);
+            },
+            $this->cacheService->searchTtl()
+        );
+
+        return response()->json(['data' => $suggestions]);
     }
 
     #[OA\Get(
@@ -177,9 +210,7 @@ class ProductSearchOptimizationController extends Controller
     #[OA\Response(response: 200, description: 'Successful operation')]
     public function stats()
     {
-        $cacheKey = 'catalog:stats:global';
-
-        $data = Cache::remember($cacheKey, 60, function () {
+        $data = $this->cacheService->remember($this->cacheService->searchStatsKey(), function () {
             $total = Product::count();
 
             // total active if column exists
@@ -235,7 +266,7 @@ class ProductSearchOptimizationController extends Controller
                 'categories_by_avg_rating' => $categoriesSummary,
                 'generated_at' => Carbon::now()->toIso8601String(),
             ];
-        });
+        }, $this->cacheService->searchTtl());
 
         return response()->json(['data' => $data]);
     }

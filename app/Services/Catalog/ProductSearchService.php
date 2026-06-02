@@ -19,6 +19,8 @@ class ProductSearchService
      */
     public function search(array $params)
     {
+        $params = $this->normalizeAliases($params);
+
         $allowed = ['keyword','category_id','min_price','max_price','rating','sort_by','order','page','limit'];
         $clean = [];
         foreach ($allowed as $k) {
@@ -35,5 +37,27 @@ class ProductSearchService
         }
 
         return $this->repo->search($clean);
+    }
+
+    protected function normalizeAliases(array $params): array
+    {
+        if (isset($params['min_rating']) && !isset($params['rating'])) {
+            $params['rating'] = $params['min_rating'];
+        }
+
+        if (!empty($params['sort']) && empty($params['sort_by'])) {
+            [$sortBy, $order] = match ($params['sort']) {
+                'price_asc' => ['price', 'asc'],
+                'price_desc' => ['price', 'desc'],
+                'rating_desc' => ['rating', 'desc'],
+                'rating_asc' => ['rating', 'asc'],
+                default => ['latest', 'desc'],
+            };
+
+            $params['sort_by'] = $sortBy;
+            $params['order'] = $params['order'] ?? $order;
+        }
+
+        return $params;
     }
 }

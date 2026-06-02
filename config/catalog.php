@@ -16,6 +16,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Search Cache Configuration
+    |--------------------------------------------------------------------------
+    |
+    | TTL pendek untuk cache endpoint search optimization seperti autocomplete,
+    | facets, suggest, dan stats. Dibuat lebih pendek dari cache detail produk
+    | agar hasil search tetap cukup fresh saat katalog sering berubah.
+    |
+    */
+
+    'search_cache_ttl' => (int) env('CATALOG_SEARCH_CACHE_TTL', 300),
+
+    /*
+    |--------------------------------------------------------------------------
     | Batch Processing
     |--------------------------------------------------------------------------
     |

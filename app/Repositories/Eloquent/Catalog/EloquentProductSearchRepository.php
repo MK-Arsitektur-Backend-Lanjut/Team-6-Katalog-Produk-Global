@@ -54,10 +54,10 @@ class EloquentProductSearchRepository
         if (!empty($params['keyword'])) {
             $kw = trim($params['keyword']);
 
-            // Prefer FULLTEXT MATCH...AGAINST when available on products.name
+            // Prefer FULLTEXT MATCH...AGAINST when available for product text search.
             $useFulltext = false;
             try {
-                $res = DB::select("SHOW INDEX FROM {$table} WHERE Column_name = 'name' AND Index_type = 'FULLTEXT'");
+                $res = DB::select("SHOW INDEX FROM {$table} WHERE Key_name = 'ft_products_search' AND Index_type = 'FULLTEXT'");
                 if (!empty($res)) {
                     $useFulltext = true;
                 }
@@ -66,8 +66,15 @@ class EloquentProductSearchRepository
             }
 
             if ($useFulltext) {
-                // use boolean mode for partial match and relevance
-                $query->when($kw, fn($q) => $q->whereRaw("MATCH({$table}.name) AGAINST(? IN BOOLEAN MODE)", [$kw]));
+                $terms = collect(preg_split('/\s+/', $kw))
+                    ->filter()
+                    ->map(fn($term) => '+' . $term . '*')
+                    ->implode(' ');
+
+                $query->when($terms, fn($q) => $q->whereRaw(
+                    "MATCH({$table}.name, {$table}.short_description) AGAINST(? IN BOOLEAN MODE)",
+                    [$terms]
+                ));
             } elseif (Schema::hasColumn($table, 'name')) {
                 $query->when($kw, fn($q) => $q->where("{$table}.name", 'like', "%{$kw}%"));
             } elseif (Schema::hasColumn($table, 'slug')) {
