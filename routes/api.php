@@ -35,6 +35,9 @@ Route::prefix('v1/catalog')->group(function () {
         Route::get('/', [ProductDetailController::class, 'index'])
             ->name('catalog.products.index');
 
+        Route::get('cursor', [ProductDetailController::class, 'cursorIndex'])
+            ->name('catalog.products.cursor');
+
         Route::get('id/{id}', [ProductDetailController::class, 'showById'])
             ->where('id', '[0-9]+')
             ->name('catalog.products.showById');

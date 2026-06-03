@@ -90,18 +90,64 @@
                 "tags": [
                     "Public Products"
                 ],
-                "summary": "Get all active products",
-                "description": "Returns paginated active products list",
+                "summary": "Get all active products (offset pagination)",
+                "description": "Returns paginated active products list. Max 10000 items per page. Results are cached in Redis.",
                 "operationId": "getProducts",
                 "parameters": [
                     {
                         "name": "per_page",
                         "in": "query",
-                        "description": "Items per page",
+                        "description": "Items per page (max 10000)",
                         "required": false,
                         "schema": {
                             "type": "integer",
                             "default": 15
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/v1/catalog/products/cursor": {
+            "get": {
+                "tags": [
+                    "Public Products"
+                ],
+                "summary": "Get all active products (cursor pagination)",
+                "description": "Cursor-based pagination — efficient for iterating large datasets (10,000+ products). Does not use OFFSET so performance is constant across all pages.",
+                "operationId": "getProductsCursor",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page (max 10000)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "description": "Cursor from previous response",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],

@@ -67,29 +67,76 @@ class ProductDetailService
     }
 
     /**
-     * Ambil produk aktif berserta isinya dengan paginasi (untuk public API).
+     * Ambil produk aktif dengan paginasi + Redis cache.
+     * Menggunakan format ringkas (tanpa snapshot) untuk efisiensi.
      */
-    public function paginate(int $perPage = 15): array
+    public function paginate(int $perPage = 15, int $page = 1): array
     {
-        $paginator = $this->productReadRepo->paginateActive($perPage);
+        $cacheKey = $this->cacheService->productListPageKey($page, $perPage);
 
-        $data = $paginator->getCollection()->map(function (Product $product) {
-            return $this->formatResponse($product);
+        return $this->cacheService->remember($cacheKey, function () use ($perPage) {
+            $paginator = $this->productReadRepo->paginateActive($perPage);
+
+            $data = $paginator->getCollection()->map(function (Product $product) {
+                return $this->formatListItem($product);
+            })->toArray();
+
+            return [
+                'data' => $data,
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'per_page' => $paginator->perPage(),
+                    'total' => $paginator->total(),
+                ]
+            ];
+        });
+    }
+
+    /**
+     * Cursor pagination — efisien untuk iterasi dataset besar (10.000+).
+     * Tidak menggunakan OFFSET sehingga performa konstan di semua halaman.
+     */
+    public function cursorPaginate(int $perPage = 100): array
+    {
+        $paginator = $this->productReadRepo->cursorPaginateActive($perPage);
+
+        $data = $paginator->items();
+        $items = collect($data)->map(function (Product $product) {
+            return $this->formatListItem($product);
         })->toArray();
 
         return [
-            'data' => $data,
+            'data' => $items,
             'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
+                'has_more' => $paginator->hasMorePages(),
+                'next_cursor' => $paginator->nextCursor()?->encode(),
+                'prev_cursor' => $paginator->previousCursor()?->encode(),
             ]
         ];
     }
 
     /**
-     * Format response dari model Product.
+     * Format ringkas untuk listing produk (card view).
+     * TIDAK menyertakan data berat dari metadata_snapshot.
+     */
+    protected function formatListItem(Product $product): array
+    {
+        return [
+            'id' => $product->id,
+            'sku' => $product->sku,
+            'slug' => $product->slug,
+            'name' => $product->name,
+            'short_description' => $product->short_description,
+            'price' => (float) $product->price,
+            'rating_avg' => (float) $product->rating_avg,
+            'metadata_version' => $product->metadata_version,
+        ];
+    }
+
+    /**
+     * Format lengkap untuk detail produk (single product view).
      *
      * Mengambil data langsung dari metadata_snapshot (JSON column)
      * sehingga tidak perlu join ke tabel lain.
