@@ -28,19 +28,40 @@ class ProductDetailController extends Controller
     #[OA\Get(
         path: '/api/v1/catalog/products',
         operationId: 'getProducts',
-        summary: 'Get all active products',
-        tags: ['Module 1 - Catalog Metadata'],
-        description: 'Returns paginated active products list',
+        summary: 'Get all active products (offset pagination)',
+        tags: ['Public Products'],
+        description: 'Returns paginated active products list. Max 10000 items per page. Results are cached in Redis.',
     )]
-    #[OA\Parameter(name: 'per_page', description: 'Items per page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 15))]
+    #[OA\Parameter(name: 'per_page', description: 'Items per page (max 10000)', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 15))]
+    #[OA\Parameter(name: 'page', description: 'Page number', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1))]
     #[OA\Response(response: 200, description: 'Successful operation')]
     public function index(Request $request): JsonResponse
     {
-        $perPage = (int) $request->query('per_page', 15);
-        
-        $paginatedData = $this->productDetailService->paginate($perPage);
+        $perPage = min((int) $request->query('per_page', 15), 10000);
+        $page = max((int) $request->query('page', 1), 1);
+
+        $paginatedData = $this->productDetailService->paginate($perPage, $page);
 
         return response()->json($paginatedData);
+    }
+
+    #[OA\Get(
+        path: '/api/v1/catalog/products/cursor',
+        operationId: 'getProductsCursor',
+        summary: 'Get all active products (cursor pagination)',
+        tags: ['Public Products'],
+        description: 'Cursor-based pagination — efficient for iterating large datasets (10,000+ products). Does not use OFFSET so performance is constant across all pages.',
+    )]
+    #[OA\Parameter(name: 'per_page', description: 'Items per page (max 10000)', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 100))]
+    #[OA\Parameter(name: 'cursor', description: 'Cursor from previous response', in: 'query', required: false, schema: new OA\Schema(type: 'string'))]
+    #[OA\Response(response: 200, description: 'Successful operation')]
+    public function cursorIndex(Request $request): JsonResponse
+    {
+        $perPage = min((int) $request->query('per_page', 100), 10000);
+
+        $data = $this->productDetailService->cursorPaginate($perPage);
+
+        return response()->json($data);
     }
 
     #[OA\Get(

@@ -34,7 +34,29 @@ class EloquentProductReadRepository implements ProductReadRepositoryInterface
      */
     public function paginateActive(int $perPage = 15): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Product::active()->latest()->paginate($perPage);
+        return Product::active()
+            ->select([
+                'id', 'sku', 'slug', 'name', 'short_description',
+                'price', 'rating_avg', 'status', 'metadata_version',
+                'created_at', 'updated_at',
+            ])
+            ->latest()
+            ->paginate($perPage);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function cursorPaginateActive(int $perPage = 100): \Illuminate\Contracts\Pagination\CursorPaginator
+    {
+        return Product::active()
+            ->select([
+                'id', 'sku', 'slug', 'name', 'short_description',
+                'price', 'rating_avg', 'status', 'metadata_version',
+                'created_at', 'updated_at',
+            ])
+            ->orderBy('id')
+            ->cursorPaginate($perPage);
     }
 
     /**

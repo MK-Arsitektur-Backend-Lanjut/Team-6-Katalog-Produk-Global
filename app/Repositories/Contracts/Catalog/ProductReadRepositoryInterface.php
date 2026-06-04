@@ -30,6 +30,11 @@ interface ProductReadRepositoryInterface
     public function paginateActive(int $perPage = 15): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
     /**
+     * Ambil semua produk aktif dengan cursor pagination (efisien untuk dataset besar).
+     */
+    public function cursorPaginateActive(int $perPage = 100): \Illuminate\Contracts\Pagination\CursorPaginator;
+
+    /**
      * Cari produk berdasarkan slug (tanpa filter status, untuk internal).
      */
     public function findBySlug(string $slug): ?Product;

@@ -38,6 +38,11 @@ class CatalogCacheService
         return "catalog:product:id:{$id}";
     }
 
+    public function productListPageKey(int $page, int $perPage): string
+    {
+        return "catalog:products:list:pp{$perPage}:p{$page}";
+    }
+
     public function categoryTreeKey(): string
     {
         return 'catalog:category:tree';
@@ -133,6 +138,41 @@ class CatalogCacheService
 
         if ($slug) {
             $this->forget($this->productSlugKey($slug));
+        }
+
+        // Juga invalidate listing cache karena data produk berubah
+        $this->invalidateProductList();
+    }
+
+    /**
+     * Invalidate semua cache listing produk.
+     * Menggunakan Redis SCAN + DELETE untuk menghapus berdasarkan pattern.
+     */
+    public function invalidateProductList(): void
+    {
+        $prefix = config('database.redis.options.prefix', '');
+        $pattern = 'catalog:products:list:*';
+
+        try {
+            $redis = Cache::store('redis')->getStore()->getRedis()->connection();
+            $cursor = null;
+            do {
+                $result = $redis->scan($cursor, [
+                    'match' => $prefix . $pattern,
+                    'count' => 100,
+                ]);
+
+                if ($result === false) break;
+
+                [$cursor, $keys] = $result;
+
+                if (!empty($keys)) {
+                    $redis->del(...$keys);
+                }
+            } while ($cursor !== 0 && $cursor !== '0');
+        } catch (\Throwable $e) {
+            // Fallback: jika SCAN gagal, invalidasi tetap berjalan via log
+            report($e);
         }
     }
 
