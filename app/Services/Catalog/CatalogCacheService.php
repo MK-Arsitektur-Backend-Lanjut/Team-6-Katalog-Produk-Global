@@ -58,6 +58,31 @@ class CatalogCacheService
         return "catalog:category:slug:{$slug}";
     }
 
+    public function searchAutocompleteKey(string $query): string
+    {
+        return 'catalog:search:autocomplete:' . md5(mb_strtolower($query));
+    }
+
+    public function searchFacetsKey(string $keyword): string
+    {
+        return 'catalog:search:facets:' . md5(mb_strtolower($keyword));
+    }
+
+    public function searchSuggestKey(int $productId): string
+    {
+        return "catalog:search:suggest:{$productId}";
+    }
+
+    public function searchStatsKey(): string
+    {
+        return 'catalog:search:stats:global';
+    }
+
+    public function searchTtl(): int
+    {
+        return (int) config('catalog.search_cache_ttl', 300);
+    }
+
     // =========================================================================
     // CACHE OPERATIONS
     // =========================================================================
