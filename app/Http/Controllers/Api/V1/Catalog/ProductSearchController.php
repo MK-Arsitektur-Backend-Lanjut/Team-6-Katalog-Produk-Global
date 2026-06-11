@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1\Catalog;
 
 use OpenApi\Attributes as OA;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Catalog\ProductSearchRequest;
 use App\Services\Catalog\ProductSearchService;
 
 class ProductSearchController extends Controller
@@ -98,17 +98,19 @@ class ProductSearchController extends Controller
             ]
         )
     )]
-    public function __invoke(Request $request)
+    public function __invoke(ProductSearchRequest $request)
     {
-        $paginator = $this->service->search($request->all());
+        $paginator = $this->service->search($request->validated());
 
         return response()->json([
             'data' => $paginator->items(),
             'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-                'last_page' => $paginator->lastPage(),
+                'current_page'  => $paginator->currentPage(),
+                'per_page'      => $paginator->perPage(),
+                // simplePaginate tidak menghitung total/last_page (lebih efisien).
+                // Gunakan has_more_pages sebagai pengganti untuk navigasi cursor-style.
+                'has_more_pages' => $paginator->hasMorePages(),
+                'next_page'     => $paginator->hasMorePages() ? $paginator->currentPage() + 1 : null,
             ],
         ]);
     }
