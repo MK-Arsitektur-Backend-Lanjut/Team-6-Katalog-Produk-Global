@@ -54,6 +54,9 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "stress:search": [
+            "@php artisan catalog:stress-search"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
