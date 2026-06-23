@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Module 3 - User Preferences & Auth Controllers
+use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\UserPreference\WishlistController;
+use App\Http\Controllers\Api\V1\UserPreference\ProductViewHistoryController;
+
 // Public Read API Controllers
 use App\Http\Controllers\Api\V1\Catalog\ProductDetailController;
 use App\Http\Controllers\Api\V1\Catalog\CategoryController;
@@ -32,6 +37,26 @@ Route::prefix('v1/catalog')->group(function () {
 
     // Product Detail (read-only, cache-backed)
     Route::prefix('products')->group(function () {
+        // Product Search
+        Route::get('search', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchController::class, '__invoke'])
+            ->name('catalog.products.search');
+
+        // Search Optimization endpoints (autocomplete, facets, bulk, suggest, stats)
+        Route::get('autocomplete', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'autocomplete'])
+            ->name('catalog.products.autocomplete');
+
+        Route::get('facets', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'facets'])
+            ->name('catalog.products.facets');
+
+        Route::post('bulk-search', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'bulkSearch'])
+            ->name('catalog.products.bulkSearch');
+
+        Route::get('suggest', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'suggest'])
+            ->name('catalog.products.suggest');
+
+        Route::get('stats', [\App\Http\Controllers\Api\V1\Catalog\ProductSearchOptimizationController::class, 'stats'])
+            ->name('catalog.products.stats');
+
         Route::get('/', [ProductDetailController::class, 'index'])
             ->name('catalog.products.index');
 
@@ -110,5 +135,51 @@ Route::prefix('v1/internal/catalog')->group(function () {
         Route::put('{id}', [AttributeController::class, 'update'])
             ->where('id', '[0-9]+')
             ->name('internal.catalog.attributes.update');
+    });
+});
+
+
+// =============================================================================
+// MODULE 3 — USER PREFERENCES & AUTH
+// =============================================================================
+
+Route::prefix('v1/auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register'])
+        ->name('auth.register');
+
+    Route::post('login', [AuthController::class, 'login'])
+        ->name('auth.login');
+
+    Route::middleware('jwt.auth')->group(function () {
+        Route::get('me', [AuthController::class, 'me'])
+            ->name('auth.me');
+
+        Route::post('logout', [AuthController::class, 'logout'])
+            ->name('auth.logout');
+    });
+});
+
+Route::middleware('jwt.auth')->prefix('v1/user')->group(function () {
+    Route::prefix('wishlist')->group(function () {
+        Route::get('/', [WishlistController::class, 'index'])
+            ->name('user.wishlist.index');
+
+        Route::post('/', [WishlistController::class, 'store'])
+            ->name('user.wishlist.store');
+
+        Route::delete('{productId}', [WishlistController::class, 'destroy'])
+            ->where('productId', '[0-9]+')
+            ->name('user.wishlist.destroy');
+    });
+
+    Route::prefix('history/views')->group(function () {
+        Route::get('/', [ProductViewHistoryController::class, 'index'])
+            ->name('user.history.views.index');
+
+        Route::post('/', [ProductViewHistoryController::class, 'store'])
+            ->name('user.history.views.store');
+
+        Route::delete('/', [ProductViewHistoryController::class, 'clear'])
+            ->name('user.history.views.clear');
     });
 });

@@ -7,6 +7,9 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\UserPreference\Wishlist;
+use App\Models\UserPreference\ProductViewHistory;
 
 class User extends Authenticatable
 {
@@ -45,5 +48,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Wishlist produk milik user.
+     */
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    /**
+     * Riwayat produk yang pernah dilihat user.
+     */
+    public function productViewHistories(): HasMany
+    {
+        return $this->hasMany(ProductViewHistory::class);
     }
 }

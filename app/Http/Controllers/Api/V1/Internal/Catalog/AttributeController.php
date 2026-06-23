@@ -27,7 +27,7 @@ class AttributeController extends Controller
         path: '/api/v1/internal/catalog/attributes',
         operationId: 'storeAttribute',
         summary: 'Create new attribute',
-        tags: ['Internal Attribute Management'],
+        tags: ['Module 1 - Catalog Metadata'],
     )]
     #[OA\RequestBody(
         required: true,
@@ -75,7 +75,7 @@ class AttributeController extends Controller
         path: '/api/v1/internal/catalog/attributes/{id}',
         operationId: 'updateAttribute',
         summary: 'Update existing attribute',
-        tags: ['Internal Attribute Management'],
+        tags: ['Module 1 - Catalog Metadata'],
     )]
     #[OA\Parameter(name: 'id', description: 'Attribute ID', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\RequestBody(

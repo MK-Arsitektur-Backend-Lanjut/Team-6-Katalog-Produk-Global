@@ -20,7 +20,7 @@ class CategoryController extends Controller
         path: '/api/v1/catalog/categories/tree',
         operationId: 'getCategoryTree',
         summary: 'Get category hierarchy tree',
-        tags: ['Public Categories'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Returns all categories in a nested tree structure (cached)',
     )]
     #[OA\Response(response: 200, description: 'Successful operation')]
@@ -37,7 +37,7 @@ class CategoryController extends Controller
         path: '/api/v1/catalog/categories/{slug}',
         operationId: 'getCategoryBySlug',
         summary: 'Get category detail by slug',
-        tags: ['Public Categories'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Returns the category details',
     )]
     #[OA\Parameter(name: 'slug', description: 'Category Slug', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
@@ -62,7 +62,7 @@ class CategoryController extends Controller
         path: '/api/v1/catalog/categories/{slug}/breadcrumbs',
         operationId: 'getCategoryBreadcrumbs',
         summary: 'Get breadcrumbs for a category',
-        tags: ['Public Categories'],
+        tags: ['Module 1 - Catalog Metadata'],
         description: 'Returns an array of categories representing the path from root to this category',
     )]
     #[OA\Parameter(name: 'slug', description: 'Category Slug', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
