@@ -10,14 +10,6 @@ use App\Http\Resources\Catalog\CategoryTreeResource;
 use App\Services\Catalog\CategoryHierarchyService;
 use Illuminate\Http\JsonResponse;
 
-/**
- * Controller untuk public read API kategori.
- *
- * Endpoint:
- * - GET /api/v1/catalog/categories/tree
- * - GET /api/v1/catalog/categories/{slug}
- * - GET /api/v1/catalog/categories/{slug}/breadcrumbs
- */
 class CategoryController extends Controller
 {
     public function __construct(

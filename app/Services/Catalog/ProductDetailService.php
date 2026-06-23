@@ -66,10 +66,7 @@ class ProductDetailService
         });
     }
 
-    /**
-     * Ambil produk aktif dengan paginasi + Redis cache.
-     * Menggunakan format ringkas (tanpa snapshot) untuk efisiensi.
-     */
+
     public function paginate(int $perPage = 15, int $page = 1): array
     {
         $cacheKey = $this->cacheService->productListPageKey($page, $perPage);
