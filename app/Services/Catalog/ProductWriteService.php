@@ -7,19 +7,7 @@ use App\Repositories\Contracts\Catalog\ProductReadRepositoryInterface;
 use App\Repositories\Contracts\Catalog\ProductWriteRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Service untuk operasi tulis produk (create, update, delete).
- *
- * Setiap operasi tulis melakukan:
- * 1. Validasi dan simpan data ke DB (via repository)
- * 2. Manage relasi kategori
- * 3. Rebuild metadata_snapshot
- * 4. Invalidate Redis cache
- * 5. Catat event ke outbox
- *
- * Controller cukup memanggil satu method di service ini,
- * semua side effects ditangani secara internal.
- */
+
 class ProductWriteService
 {
     public function __construct(

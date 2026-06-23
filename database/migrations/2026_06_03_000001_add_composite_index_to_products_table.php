@@ -8,10 +8,6 @@ return new class extends Migration
 {
     /**
      * Composite index untuk optimasi query listing produk aktif.
-     *
-     * Query target: WHERE status = 'active' AND deleted_at IS NULL ORDER BY created_at DESC
-     * Tanpa index ini, MySQL harus melakukan filesort pada 10.000+ row.
-     * Dengan index ini, MySQL bisa langsung scan index secara berurutan.
      */
     public function up(): void
     {

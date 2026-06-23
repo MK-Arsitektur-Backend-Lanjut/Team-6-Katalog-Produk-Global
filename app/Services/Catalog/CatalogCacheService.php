@@ -140,14 +140,9 @@ class CatalogCacheService
             $this->forget($this->productSlugKey($slug));
         }
 
-        // Juga invalidate listing cache karena data produk berubah
         $this->invalidateProductList();
     }
 
-    /**
-     * Invalidate semua cache listing produk.
-     * Menggunakan Redis SCAN + DELETE untuk menghapus berdasarkan pattern.
-     */
     public function invalidateProductList(): void
     {
         $prefix = config('database.redis.options.prefix', '');

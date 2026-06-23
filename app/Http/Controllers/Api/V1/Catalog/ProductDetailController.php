@@ -10,15 +10,6 @@ use Illuminate\Http\JsonResponse;
 
 use Illuminate\Http\Request;
 
-/**
- * Controller untuk public read API detail produk.
- *
- * Thin controller — semua logic ada di ProductDetailService.
- * Hanya menangani 3 endpoint:
- * - GET /api/v1/catalog/products
- * - GET /api/v1/catalog/products/{slug}
- * - GET /api/v1/catalog/products/id/{id}
- */
 class ProductDetailController extends Controller
 {
     public function __construct(
